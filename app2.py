@@ -40,8 +40,6 @@ conexion = mysql.connector.connect(
 cursor = conexion.cursor()
 
 
-cursor = conexion.cursor()
-
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
     st.image("logo.png", width=200)
@@ -353,19 +351,19 @@ with st.form("formulario_inscripcion"):
                 if not miembro["nombre"].strip():
                     st.error("Todos los participantes deben tener nombre")
                     st.stop()
-                    if not miembro["dni"].strip():
-                        st.error("Todos los participantes deben tener DNI/NIE")
-                        st.stop()
-                        if not validar_dni_nie(miembro["dni"]):
-                            st.error(
-                                f"El DNI/NIE de {miembro['nombre']} no es válido"
-                                )
-                            st.stop()
-                            if not miembro["curso"].strip():
-                                st.error(
-                                    f"El participante {miembro['nombre']} debe tener curso"
-                                    )
-                                st.stop()
+                if not miembro["dni"].strip():
+                    st.error("Todos los participantes deben tener DNI/NIE")
+                    st.stop()
+                if not validar_dni_nie(miembro["dni"]):
+                    st.error(
+                        f"El DNI/NIE de {miembro['nombre']} no es válido"
+                        )
+                    st.stop()
+                if not miembro["curso"].strip():
+                    st.error(
+                        f"El participante {miembro['nombre']} debe tener curso"
+                        )
+                    st.stop()
                 if not miembro["dni"].strip():
                     st.error("Todos los participantes deben tener DNI/NIE")
                     st.stop()
