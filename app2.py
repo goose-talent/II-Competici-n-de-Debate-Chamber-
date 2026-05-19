@@ -164,10 +164,10 @@ with st.form("formulario_inscripcion"):
                     "mail": mail,
                     "rol": rol
                 })
-            equipos.append({
-                "numero_equipo": i + 1,
-                "nombre_equipo": nombre_equipo,
-                "miembros": miembros
+        equipos.append({
+            "numero_equipo": i + 1,
+            "nombre_equipo": nombre_equipo,
+            "miembros": miembros
             })
     with open("politica_privacidad_goose_talent.pdf", "rb") as pdf_file:
         PDFbyte = pdf_file.read()
@@ -346,7 +346,8 @@ with st.form("formulario_inscripcion"):
                         FROM equipos
                         WHERE torneo_id = %s
                         AND numero_equipo = %s
-                        """, (torneo_id,equipo["numero_equipo"]))
+                        AND centro_id = %s
+                        """, (torneo_id,equipo["numero_equipo"],centro_id))
             equipo_id = cursor.fetchone()[0]
             for miembro in equipo["miembros"]:
                 if not miembro["nombre"].strip():
