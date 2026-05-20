@@ -327,7 +327,9 @@ with st.form("formulario_inscripcion"):
             VALUES (%s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE 
             nombre_equipo = VALUES(nombre_equipo),
-            centro = VALUES(centro)
+            centro = VALUES(centro),
+            centro_id = VALUES(centro_id),
+            numero_equipo = VALUES(numero_equipo)
             """
             cursor.execute(sql_equipo, (
                 torneo_id,
