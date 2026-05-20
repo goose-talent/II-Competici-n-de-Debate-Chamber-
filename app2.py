@@ -382,16 +382,18 @@ with st.form("formulario_inscripcion"):
                     dni,
                     curso,
                     correo,
-                    rol
+                    rol,
+                    centro
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                 nombre = VALUES(nombre),
                 apellidos = VALUES(apellidos),
                 dni = VALUES(dni),
                 curso = VALUES(curso),
                 correo = VALUES(correo),
-                rol = VALUES(rol)
+                rol = VALUES(rol),
+                centro = VALUES(centro)
                 """
                 valores = (
                     torneo_id,
@@ -402,7 +404,8 @@ with st.form("formulario_inscripcion"):
                     miembro["dni"],
                     miembro["curso"],
                     miembro["mail"],
-                    miembro["rol"]
+                    miembro["rol"],
+                    denominacion
                 )
                 cursor.execute(sql_debatiente, valores)
 
