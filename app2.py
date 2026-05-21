@@ -112,7 +112,7 @@ with st.form("formulario_inscripcion"):
     num_equipos = st.number_input(
         "Número de equipos",
         min_value=1,
-        max_value=3,
+        max_value=4,
         step=1
     )
     equipos = []
