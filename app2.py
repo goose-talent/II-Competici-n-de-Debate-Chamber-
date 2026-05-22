@@ -122,7 +122,7 @@ for i in range(num_equipos):
     )
     num_miembros = st.selectbox(
         f"Número de integrantes del equipo {i+1}",
-        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5, 6],
         key=f"miembros_{i}"
         )
     miembros = []
