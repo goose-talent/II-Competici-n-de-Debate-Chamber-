@@ -117,7 +117,7 @@ for i in range(num_equipos):
     st.markdown("---")
     st.markdown(f"## Equipo {i+1}")
     nombre_equipo = st.text_input(
-        "Nombre del equipo *",
+        "Nombre del equipo * (Debe incluir el nombre del centro seguido de una letra identificativa. Ejemplo: CEIP Maximino A)",
         key=f"equipo_{i}"
     )
     num_miembros = st.selectbox(
