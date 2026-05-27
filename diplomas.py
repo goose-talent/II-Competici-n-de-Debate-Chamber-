@@ -2,17 +2,17 @@ import os
 import re
 import subprocess
 import pymysql
-
 from docx import Document
 from docx.oxml.ns import qn
+import streamlit as st
 
-conn = pymysql.connect(
-    host="autorack.proxy.rlwy.net",
-    port=15743,
-    user="root",
-    password="kLghFoiHnqHxeGFjzmmGQaqLUjrVfHBr",
-    database="railway"
+conn = pymysql.connect(    host=st.secrets["mysql"]["host"],
+    port=st.secrets["mysql"]["port"],
+    user=st.secrets["mysql"]["user"],
+    password=st.secrets["mysql"]["password"],
+    database=st.secrets["mysql"]["database"]
 )
+    
 
 
 CARPETA_SALIDA = "Diplomas"
