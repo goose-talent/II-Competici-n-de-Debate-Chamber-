@@ -1,69 +1,137 @@
-from docxtpl import DocxTemplate
-import mysql.connector
 import os
+import re
 import subprocess
-import streamlit as st
+import pymysql
 
-conexion = mysql.connector.connect(
-    host=st.secrets["MYSQL_HOST"],
-    port=st.secrets["MYSQL_PORT"],
-    user=st.secrets["MYSQL_USER"],
-    password=st.secrets["MYSQL_PASSWORD"],
-    database=st.secrets["MYSQL_DATABASE"]
-    )
+from docx import Document
+from docx.oxml.ns import qn
 
-cursor = conexion.cursor(dictionary=True)
+conn = pymysql.connect(
+    host="autorack.proxy.rlwy.net",
+    port=15743,
+    user="root",
+    password="kLghFoiHnqHxeGFjzmmGQaqLUjrVfHBr",
+    database="railway"
+)
 
-os.makedirs("diplomas", exist_ok=True)
 
-def convertir_pdf(nombre):
+CARPETA_SALIDA = "Diplomas"
+
+os.makedirs(CARPETA_SALIDA, exist_ok=True)
+
+def limpiar_nombre(texto):
+    return re.sub(r'[<>:"/\\|?*]', "_", str(texto))
+def limpiar_nombre_centro_diploma(nombre):
+    nombre = re.sub(r'\bceip\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\bde prácticas\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\bde practicas\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\s+', ' ', nombre)
+    return nombre.strip()
+def rellenar_diploma(nombre, centro, plantilla, output_pdf):
+
+    doc = Document(plantilla)
+
+    for t in doc.element.body.iter(qn('w:t')):
+
+        if t.text:
+            if "Nombre y apellido" in t.text:
+                t.text = nombre
+
+            elif "Nombre del centro educativo" in t.text:
+                t.text = limpiar_nombre_centro_diploma(centro)
+
+    output_docx = output_pdf.replace(".pdf", ".docx")
+
+    doc.save(output_docx)
+
     subprocess.run([
         "/Applications/LibreOffice.app/Contents/MacOS/soffice",
         "--headless",
-        "--convert-to", "pdf",
-        "--outdir", "diplomas",
-        f"diplomas/{nombre}"
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        os.path.dirname(output_pdf),
+        output_docx
     ])
 
-cursor.execute("SELECT nombre, apellidos, dni FROM debatientes")
-debatientes = cursor.fetchall()
+    pdf_generado = output_docx.replace(".docx", ".pdf")
 
-for p in debatientes:
-    doc = DocxTemplate("DIPLOMA_DEBATIENTE.docx")
+    if os.path.exists(pdf_generado):
+        os.rename(pdf_generado, output_pdf)
 
-    context = {
-        "nombre": f"{p['nombre']} {p['apellidos']}",
-        "dni": p["dni"]
-    }
+    if os.path.exists(output_docx):
+        os.remove(output_docx)
 
-    doc.render(context)
+with conn.cursor() as cur:
 
-    archivo = f"diploma_{p['nombre']}_{p['apellidos']}.docx"
-    doc.save(f"diplomas/{archivo}")
-    convertir_pdf(archivo)
+    cur.execute("""
+        SELECT
+            d.nombre,
+            d.apellidos,
+            c.denominacion
+        FROM debatientes d
+        JOIN centros c
+            ON d.centro = c.denominacion
+    """)
 
-cursor.execute("SELECT tutor AS nombre_for, tutor_dni, centro FROM equipos")
-formadores = cursor.fetchall()
+    debatientes = cur.fetchall()
 
-vistos = set()
+for nombre, apellidos, centro in debatientes:
 
-for f in formadores:
-    if f["tutor_dni"] in vistos:
-        continue
-    vistos.add(f["tutor_dni"])
+    nombre_completo = f"{nombre} {apellidos}"
 
-    doc = DocxTemplate("DIPLOMA_FORMADORES.docx")
+    carpeta_centro = os.path.join(
+        CARPETA_SALIDA,
+        limpiar_nombre(centro)
+    )
 
-    context = {
-        "nombre_for": f["nombre_for"],
-        "dni_for": f["tutor_dni"],
-        "centro": f["centro"]
-    }
+    os.makedirs(carpeta_centro, exist_ok=True)
 
-    doc.render(context)
+    ruta_pdf = os.path.join(
+        carpeta_centro,
+        f"{limpiar_nombre(nombre_completo)}.pdf"
+    )
 
-    archivo = f"diploma_formador_{f['nombre_for']}.docx"
-    doc.save(f"diplomas/{archivo}")
-    convertir_pdf(archivo)
+    rellenar_diploma(
+        nombre_completo,
+        centro,
+        "diploma_participante.docx",
+        ruta_pdf
+    )
 
-print("Diplomas generados correctamente")
+with conn.cursor() as cur:
+
+    cur.execute("""
+        SELECT
+            p.nombre,
+            c.denominacion
+        FROM profesores p
+        JOIN centros c
+            ON p.centro_id = c.id
+    """)
+
+    profesores = cur.fetchall()
+
+for nombre, centro in profesores:
+
+    carpeta_centro = os.path.join(
+        CARPETA_SALIDA,
+        limpiar_nombre(centro)
+    )
+
+    os.makedirs(carpeta_centro, exist_ok=True)
+
+    ruta_pdf = os.path.join(
+        carpeta_centro,
+        f"PROFESOR_{limpiar_nombre(nombre)}.pdf"
+    )
+    rellenar_diploma(
+        nombre,
+        centro,
+        "diploma_formador.docx",
+        ruta_pdf
+)
+
+conn.close()
+
+print("PDFs generados correctamente")
