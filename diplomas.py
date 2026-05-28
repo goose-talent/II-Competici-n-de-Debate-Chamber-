@@ -4,13 +4,14 @@ import subprocess
 import pymysql
 from docx import Document
 from docx.oxml.ns import qn
-import streamlit as st
 
-conn = pymysql.connect(    host=st.secrets["mysql"]["host"],
-    port=st.secrets["mysql"]["port"],
-    user=st.secrets["mysql"]["user"],
-    password=st.secrets["mysql"]["password"],
-    database=st.secrets["mysql"]["database"]
+
+conn = pymysql.connect(  
+    host="autorack.proxy.rlwy.net",
+    port=15743,
+    user="root",
+    password="kLghFoiHnqHxeGFjzmmGQaqLUjrVfHBr",
+    database="railway"
 )
     
 
@@ -23,8 +24,11 @@ def limpiar_nombre(texto):
     return re.sub(r'[<>:"/\\|?*]', "_", str(texto))
 def limpiar_nombre_centro_diploma(nombre):
     nombre = re.sub(r'\bceip\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\bcolegio\b', '', nombre, flags=re.IGNORECASE)
     nombre = re.sub(r'\bde prácticas\b', '', nombre, flags=re.IGNORECASE)
     nombre = re.sub(r'\bde practicas\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'CPR INF-PRI-SEC', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'"', '', nombre)
     nombre = re.sub(r'\s+', ' ', nombre)
     return nombre.strip()
 def rellenar_diploma(nombre, centro, plantilla, output_pdf):

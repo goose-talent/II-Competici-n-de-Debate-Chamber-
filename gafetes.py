@@ -44,6 +44,7 @@ def partir_nombre(nombre):
     )
 def limpiar_nombre_centro(nombre):
     nombre = re.sub(r'\bceip\b', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\bcolegio\b', '', nombre, flags=re.IGNORECASE)
     nombre = re.sub(r'\bde prácticas\b', '', nombre, flags=re.IGNORECASE)
     nombre = re.sub(r'\bde practicas\b', '', nombre, flags=re.IGNORECASE)
 
